@@ -7,8 +7,8 @@ from typing import Tuple
 
 import requests
 
-logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s', datefmt='%d/%m/%y %H:%M:%S',
-                    level=logging.DEBUG)
+logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s',
+                    datefmt='%d/%m/%y %H:%M:%S', level=logging.INFO)
 
 
 class Webpage:
@@ -171,9 +171,11 @@ class Webpage:
 
         # Getting the diff command output
         diff_output = os.popen(f"diff {self.get_filename('old')} {self.get_filename('new')}").read()
+        diff_output = diff_output.replace(r'\/', '/')
 
         # Filtering the output
         filtered_diff_output = filter_DiffOutput(diff_output)
+
         # Finding the same elements
         same_elements = []
         for code_tuples in filtered_diff_output:
@@ -207,17 +209,20 @@ class Webpage:
 
         # Generating -I args
         deltachange = self.get_deltaChange()
-        args = '-I \'' + r"' -I '".join(deltachange) + "'" if deltachange else ''
-        command = rf"diff {args} {self.get_filename('old')} {self.get_filename('new')}"
+        args = '-I \'' + "' -I '".join(deltachange) + "'" if deltachange else ''
+        command = rf"""diff {args} {self.get_filename('old')} {self.get_filename('new')}"""
 
         self.logger.debug(f"sending command:\n{command}")
         # Sending the command
         output = os.popen(command).read()
 
         # Checking the output of diff
+        # TODO: using beautiful soup, strip the tags and send the strings as output to be sent as alert
         if output != '':
+            self.logger.info("Change has been DETECTED!")
             return True, output
         else:
+            self.logger.debug("No change was found")
             return False, ''
 
 
@@ -257,7 +262,7 @@ def find_SameElements(code1, code2) -> str:
     """
     same = ''
     for i, j in zip(code1, code2):
-        if i == j and i.isnumeric() is False:
+        if i == j and i.isnumeric() is False and i not in ['\\', '/']:
             same += i
         else:
             break
@@ -289,3 +294,4 @@ if __name__ == '__main__':
     print("url:" + test2_method1.get_url())
     test2_method1.find_DeltaChange(debug=True)
     print(test2_method1.method1_diff())
+    
