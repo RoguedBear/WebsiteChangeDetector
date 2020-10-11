@@ -1,12 +1,14 @@
 #  Copyright (c) 2020. RoguedBear
-import requests
 import logging
+import os
 import re
 from time import sleep
-import os
+from typing import Tuple
 
-logging.basicConfig(format='%(levelname)s: %(asctime)s - %(funcName)10s() - %(message)s', datefmt='%d/%m/%y %H:%M:%S',
-                    level=logging.INFO)
+import requests
+
+logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s', datefmt='%d/%m/%y %H:%M:%S',
+                    level=logging.DEBUG)
 
 
 class Webpage:
@@ -36,36 +38,43 @@ class Webpage:
         self.url = format_url(url)
         self.filename = {'old': f'{self.name}_old.html', 'new': f'{self.name}_new.html'}
         self.deltaChange = []
-        logging.debug(f"Created Class Webpage: {name}")
+        self.logger = logging.getLogger(name)
+        self.logger.debug(f"Created Class Webpage: {name}")
 
     # =========================================
     ## Getters
-    def get_name(self):
+    def get_name(self) -> str:
         """
         Returns the webpage's name
         output: string
         """
         return self.name
 
-    def get_url(self):
+    def get_url(self) -> str:
         """
         Returns the webpage's url
         output: string url
         """
         return self.url
 
-    def get_webpage(self):
+    def get_webpage(self) -> str:
         """
         Downloads the webpage from the internet and returns the html string.
         Also saves the webpage in code variable.
         output: str
         """
-        html_page = requests.get(self.get_url()).text
+        while True:
+            html_page = requests.get(self.get_url()).text
+            if len(html_page) == 0:
+                self.logger.warning(f" received webpage for \"{self.get_name()}\" of size 0! Retrying... ")
+            else:
+                self.logger.debug(f"successfully downloaded {self.get_name()}'s webpage.")
+                break
         # Not required for method 1
         # self.code = html_page
         return html_page
 
-    def get_filename(self, filetype):
+    def get_filename(self, filetype) -> str:
         """
         Returns the predefined filename of the Webpage
         :param filetype: old/new filename
@@ -102,7 +111,7 @@ class Webpage:
     # ==========================================
     ## Other Functions
 
-    def save_html(self, save_as, code=None) -> None:
+    def save_html(self, save_as: str, code: str = None) -> None:
         """
         Save's the html code with the file name <name>_old.html
         :param code: str, html code
@@ -116,9 +125,9 @@ class Webpage:
         file = open(file_name, 'w')
         file.write(code)
         file.close()
-        logging.debug(f"Saved html file as: {file_name} for class {self.get_name()}")
+        self.logger.debug(f"Saved html file as: {file_name} for class {self.get_name()}")
 
-    def load_html(self, old_new):
+    def load_html(self, old_new) -> str:
         """
         Loads the html code from the file
         :param old_new: [old/new] html code
@@ -127,18 +136,19 @@ class Webpage:
         try:
             file_name = self.get_filename(old_new)
             file = open(file_name, 'r')
-            logging.debug(f"Successfully opened {file_name}")
+            self.logger.debug(f"Successfully opened {file_name}")
             return ''.join(file.readlines())
         except FileNotFoundError:
-            logging.warning("File for " + self.get_name() + " does not exists!")
+            self.logger.warning("File for " + self.get_name() + " does not exists!")
             return ''
 
     # ==========================================
     ## Detectors
 
-    def find_DeltaChange(self, WAIT_TIME=5, debug=False):
+    def find_DeltaChange(self, WAIT_TIME=5, debug=False) -> None:
         """
         Identifies the constant change that'll exist between 2 downloaded versions of the website
+        :param debug:
         :param WAIT_TIME: defaults to 5s. the time to wait before downloading the next page
         :return:  None. internally stores the changes
 
@@ -169,6 +179,46 @@ class Webpage:
         for code_tuples in filtered_diff_output:
             same_elements.append(find_SameElements(code_tuples[0], code_tuples[1]))
         self.set_deltaChange(same_elements)
+
+        if not same_elements:
+            self.logger.debug(f"'{self.get_name()}': No deltaChange found")
+        else:
+            self.logger.debug(f"'{self.get_name()}': DeltaChange found ({len(same_elements)})")
+
+    def method1_diff(self) -> Tuple[bool, str]:
+        """
+        This function uses bash's `diff` command to detect change in a website's HTML.
+        Will return True/False value and optionally diff command's output
+        :return: tuple(bool, str)
+
+        # Pseudocode:
+        * Check if the files exist, raise error and/or skip otherwise
+        * Generate the -I arguments
+        * send the diff command
+        * if the diff's output is '' then nothing changed
+        * otherwise, return the output as well
+        """
+        # Check if files exist
+        self.logger.debug("Checking if file exists...")
+        if self.load_html('old') == '' or self.load_html('new') == '':
+            self.logger.warning(f"{self.get_name()}: Since file does not exists, finding deltaChange again.")
+            self.find_DeltaChange()
+        self.logger.debug("File check complete.")
+
+        # Generating -I args
+        deltachange = self.get_deltaChange()
+        args = '-I \'' + r"' -I '".join(deltachange) + "'" if deltachange else ''
+        command = rf"diff {args} {self.get_filename('old')} {self.get_filename('new')}"
+
+        self.logger.debug(f"sending command:\n{command}")
+        # Sending the command
+        output = os.popen(command).read()
+
+        # Checking the output of diff
+        if output != '':
+            return True, output
+        else:
+            return False, ''
 
 
 def format_url(url):
@@ -215,6 +265,7 @@ def find_SameElements(code1, code2) -> str:
 
 
 if __name__ == '__main__':
+    '''
     test = Webpage('Ubi', 'free.ubisoft.com')
     print(test.load_html('old'))
 
@@ -227,3 +278,14 @@ if __name__ == '__main__':
     print(test3.get_url())
     test3.find_DeltaChange(debug=True)
     print(test3.get_deltaChange())
+    '''
+    # Testing method1_diff
+    print('--------------')
+    test_method1 = Webpage('1', 'localhost')
+    test_method1.find_DeltaChange(debug=True)
+    print(test_method1.method1_diff())
+
+    test2_method1 = Webpage('local', 'localhost')
+    print("url:" + test2_method1.get_url())
+    test2_method1.find_DeltaChange(debug=True)
+    print(test2_method1.method1_diff())
