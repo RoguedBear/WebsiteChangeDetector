@@ -20,10 +20,11 @@ class Webpage:
     -----------
     Methods:
      #Getters:
-      - get_name()    : returns the name of the website
-      - get_url()     : returns the url of the website
-      - get_webpage() : downloads the webpage from the internet and returns as string
-      - get_filename(): returns the appropriate filename
+      - get_name()       : returns the name of the website
+      - get_url()        : returns the url of the website
+      - get_webpage()    : downloads the webpage from the internet and returns as string
+      - get_filename()   : returns the appropriate filename
+      - get_deltaChange(): returns the list containing deltachange
 
     #Setter:
       - set_deltaChange() : stores the list of changes
@@ -31,6 +32,11 @@ class Webpage:
     #Other Functions:
       - save_html(): saves the html code to a unique file
       - load_html(): loads the html code to a string in a variable
+      - detect()   : the method used in main, which'll select the appropriate way to detect changes.
+
+    #Detectors:
+      - find_DeltaChange(): Finds the constant change that'll be present between a webpage's 2 html file
+      - method1_diff()    : Method 1 for detecting change in website. Uses bash's `diff` command.
     """
 
     def __init__(self, name, url):
@@ -208,6 +214,7 @@ class Webpage:
         self.logger.debug("File check complete.")
 
         # Generating -I args
+        # TODO: save this command line argument as instance variable and use that to save potentially some CPU usage.
         deltachange = self.get_deltaChange()
         args = '-I \'' + "' -I '".join(deltachange) + "'" if deltachange else ''
         command = rf"""diff {args} {self.get_filename('old')} {self.get_filename('new')}"""
@@ -224,6 +231,22 @@ class Webpage:
         else:
             self.logger.debug("No change was found")
             return False, ''
+
+    def detect(self, method: int):
+        """
+        This method will be used by main.
+        :param method: the method to use to detect changes.
+        (PS: planned some more ways to detect changes using BeautifulSoup and maybe difflib)
+        :return: None
+        """
+        try:
+            assert method in [1]
+        except AssertionError:
+            self.logger.critical("method argument not in range! Cannot detect changes for this webpage until "
+                                 f"then.\nGiven 'method' argument: {method}")
+
+        if method == 1:
+            self.method1_diff()
 
 
 def format_url(url):
@@ -294,4 +317,4 @@ if __name__ == '__main__':
     print("url:" + test2_method1.get_url())
     test2_method1.find_DeltaChange(debug=True)
     print(test2_method1.method1_diff())
-    
+    test2_method1.detect(3)
