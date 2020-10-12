@@ -7,9 +7,6 @@ from typing import Tuple
 
 import requests
 
-logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s',
-                    datefmt='%d/%m/%y %H:%M:%S', level=logging.INFO)
-
 
 class Webpage:
     """
@@ -206,12 +203,6 @@ class Webpage:
         * if the diff's output is '' then nothing changed
         * otherwise, return the output as well
         """
-        # Check if files exist
-        self.logger.debug("Checking if file exists...")
-        if self.load_html('old') == '' or self.load_html('new') == '':
-            self.logger.warning(f"{self.get_name()}: Since file does not exists, finding deltaChange again.")
-            self.find_DeltaChange()
-        self.logger.debug("File check complete.")
 
         # Generating -I args
         # TODO: save this command line argument as instance variable and use that to save potentially some CPU usage.
@@ -232,12 +223,12 @@ class Webpage:
             self.logger.debug("No change was found")
             return False, ''
 
-    def detect(self, method: int):
+    def detect(self, method: int) -> Tuple[bool, str]:
         """
         This method will be used by main.
         :param method: the method to use to detect changes.
         (PS: planned some more ways to detect changes using BeautifulSoup and maybe difflib)
-        :return: None
+        :return: Tuple(bool, str)
         """
         try:
             assert method in [1]
@@ -245,8 +236,21 @@ class Webpage:
             self.logger.critical("method argument not in range! Cannot detect changes for this webpage until "
                                  f"then.\nGiven 'method' argument: {method}")
 
+        # Downloading the new file
+        new_code = self.get_webpage()
+        self.save_html('new', new_code)
+
+        # USing one of the detection methods
         if method == 1:
-            self.method1_diff()
+            change_detected, output = self.method1_diff()
+
+        # After the checks are complete, move the _new.html file to as _old.html
+        old_code = self.load_html('new')
+        self.save_html('old', old_code)
+
+        # Finally return the output
+        # noinspection PyUnboundLocalVariable
+        return change_detected, output
 
 
 def format_url(url):
@@ -293,6 +297,8 @@ def find_SameElements(code1, code2) -> str:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s',
+                        datefmt='%d/%m/%y %H:%M:%S', level=logging.INFO)
     '''
     test = Webpage('Ubi', 'free.ubisoft.com')
     print(test.load_html('old'))
