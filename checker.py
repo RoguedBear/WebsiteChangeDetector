@@ -259,7 +259,9 @@ def format_url(url):
     :param url: str
     :return: str
     """
-    if url[0:8] != 'https://' or url[0:7] != 'http://':
+    if url == '':
+        raise Exception('EmptyURLProvided - Check the configuration file')
+    if url[0:8] != 'https://' and url[0:7] != 'http://':
         url = 'https://' + url
     return url
 
@@ -299,7 +301,7 @@ def find_SameElements(code1, code2) -> str:
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s',
                         datefmt='%d/%m/%y %H:%M:%S', level=logging.INFO)
-    '''
+
     test = Webpage('Ubi', 'free.ubisoft.com')
     print(test.load_html('old'))
 
@@ -312,7 +314,7 @@ if __name__ == '__main__':
     print(test3.get_url())
     test3.find_DeltaChange(debug=True)
     print(test3.get_deltaChange())
-    '''
+    
     # Testing method1_diff
     print('--------------')
     test_method1 = Webpage('1', 'localhost')
