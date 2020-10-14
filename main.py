@@ -111,8 +111,12 @@ try:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             logger.info(f"Reading \"{row[0]}\".")
+
             new_class_instance = checker.Webpage(row[0].strip(), row[1].strip())
-            new_class_instance.find_DeltaChange()
+            try:
+                new_class_instance.find_DeltaChange(int(row[2]))
+            except (ValueError, IndexError):
+                new_class_instance.find_DeltaChange()
             MASTER_WebpageList.append(new_class_instance)
     logger.info(f"Loading complete! Added: {len(MASTER_WebpageList)} elements")
 except FileNotFoundError:
