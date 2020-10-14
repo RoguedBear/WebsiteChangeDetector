@@ -88,6 +88,7 @@ class Webpage:
         try:
             assert filetype in ['old', 'new'], "filetype variable is not 'old' or 'new'!\nfiletype: " + str(filetype)
             return self.filename[filetype]
+        # TODO: do something about this:
         except AssertionError:
             return filetype
 
