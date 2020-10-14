@@ -4,7 +4,7 @@ import os
 import re
 from time import sleep
 from typing import Tuple
-
+import datetime
 import requests
 
 
@@ -80,6 +80,8 @@ class Webpage:
     def get_filename(self, filetype) -> str:
         """
         Returns the predefined filename of the Webpage
+        > Save/load is supposed to flexibly save/load files from any suffix name. Therefore no need to assert
+        > Need to assert here because this func will not be used in manual debugging.
         :param filetype: old/new filename
         :return:
         """
@@ -117,11 +119,11 @@ class Webpage:
     def save_html(self, save_as: str, code: str = None) -> None:
         """
         Save's the html code with the file name <name>_old.html
+        > Save/load is supposed to flexibly save/load files from any suffix name. Therefore no need to assert
         :param code: str, html code
         :param save_as: str, [old or new  values only] the extension with which to save file
         :return: None
         """
-        assert save_as in ['old', 'new'], f"type is incorrectly specified!\nExpected: old/new  Got: {save_as}"
         if code is None:
             code = self.get_webpage()
         file_name = self.get_filename(save_as)
@@ -223,9 +225,10 @@ class Webpage:
             self.logger.debug("No change was found")
             return False, ''
 
-    def detect(self, method: int) -> Tuple[bool, str]:
+    def detect(self, method: int, debug=False) -> Tuple[bool, str]:
         """
         This method will be used by main.
+        :param debug: if debug, then store the old html file when change is detected
         :param method: the method to use to detect changes.
         (PS: planned some more ways to detect changes using BeautifulSoup and maybe difflib)
         :return: Tuple(bool, str)
@@ -243,6 +246,12 @@ class Webpage:
         # USing one of the detection methods
         if method == 1:
             change_detected, output = self.method1_diff()
+
+        # If debug then save the file with current date.
+        if debug:
+            webpage_old = self.load_html('old')
+            self.save_html(f"{self.get_name()}{datetime.datetime.strftime(datetime.datetime.now(), '_%d-%m-%y_%H:%M')}"
+                           ".html", webpage_old)
 
         # After the checks are complete, move the _new.html file to as _old.html
         old_code = self.load_html('new')
