@@ -37,7 +37,7 @@
                             Otherwise uses program's default time of 14:00 IST
     ```
    3. Changes will be notified by Telegram ![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/16px-Telegram_logo.svg.png). \
-   You need to create your own bot, and enter your own bot `TOKEN` and your `CHAT_ID` on line 20 and 21 in [main.py](main.py) in the function `alert_onTelegram()`
+   You need to create your own bot, and enter your own bot `TOKEN` and your `CHAT_ID` either on line 26 and 27 in [main.py](main.py) in the function `alert_onTelegram()` or create a file same as [telegram_tokens.json](telegram_tokens.json) and enter your `CHAT_ID` and `TOKEN` in either `str` or `int` there.
 ## ToDo:
 
  - [ ] Ability to add more websites to the list without stopping the program.

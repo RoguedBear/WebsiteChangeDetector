@@ -5,6 +5,7 @@ import requests
 import checker
 import re
 import csv
+import json
 from datetime import time, datetime, timedelta
 from threading import Timer
 from time import sleep
@@ -17,8 +18,14 @@ def alert_onTelegram(message: str):
     :param message: The message
     :return: None
     """
-    CHAT_ID = ""
-    TOKEN = ""
+    try:
+        with open('telegram_tokens.json') as tokens:
+            data = json.load(tokens)
+            CHAT_ID, TOKEN = str(data['chat_id']), str(data['bot_token'])
+    except FileNotFoundError:
+        CHAT_ID = ''
+        TOKEN = ''
+
     requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&parse_mode=Markdown"
                                                                                               "&text=" + message)
 
