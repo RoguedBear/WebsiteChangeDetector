@@ -44,3 +44,8 @@
  - [ ] Check for constant changes ( aka ∆change ) daily. <br>
        some websites have messed up code changing daily, which needs to be "_intelligently_" identified if the change is some daily-occurring change (such as day/date) or an actual change.
  - [ ] Generate the before and after screenshots (much like how Visualping does).
+
+---
+#### Feel free to contribute, find issues in this project if you can!
+
+---
