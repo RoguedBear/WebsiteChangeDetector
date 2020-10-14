@@ -27,7 +27,7 @@ def alert_onTelegram(message: str):
         TOKEN = ''
 
     requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&parse_mode=Markdown"
-                                                                                              "&text=" + message)
+                                                                                              "&text=" + message[:4096])
 
 
 # noinspection PyShadowingNames
@@ -70,7 +70,7 @@ if args.debug:
 else:
     level = logging.INFO
 
-logging.basicConfig(format='%(asctime)s - %(levelname)-8s: "%(name)-20s": %(funcName)16s() - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(levelname)-8s: %(funcName)16s() : "%(name)16.15s" - %(message)s',
                     datefmt='%d/%m/%y %H:%M:%S', level=level)
 logger = logging.getLogger("PHASE:Startup")
 
