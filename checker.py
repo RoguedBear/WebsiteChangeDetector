@@ -81,12 +81,15 @@ class Webpage:
         """
         Returns the predefined filename of the Webpage
         > Save/load is supposed to flexibly save/load files from any suffix name. Therefore no need to assert
-        > Need to assert here because this func will not be used in manual debugging.
+
         :param filetype: old/new filename
         :return:
         """
-        assert filetype in ['old', 'new'], "filetype variable is not 'old' or 'new'!\nfiletype: " + str(filetype)
-        return self.filename[filetype]
+        try:
+            assert filetype in ['old', 'new'], "filetype variable is not 'old' or 'new'!\nfiletype: " + str(filetype)
+            return self.filename[filetype]
+        except AssertionError:
+            return filetype
 
     def get_deltaChange(self) -> list:
         """
