@@ -36,11 +36,11 @@ class Webpage:
       - method1_diff()    : Method 1 for detecting change in website. Uses bash's `diff` command.
     """
 
-    def __init__(self, name, url, verifySSL=True):
+    def __init__(self, name, url):
         self.sleep_time = 0.5
         self.name = name
         self.url = format_url(url)
-        self.verifySSL = verifySSL
+        self.verifySSL = True
         self.filename = {'old': f'{self.name}_old.html', 'new': f'{self.name}_new.html'}
         self.deltaChange = []
         self.logger = logging.getLogger(name)
@@ -126,6 +126,18 @@ class Webpage:
         :return: None
         """
         self.deltaChange = list_of_changes
+
+    def set_verifySSL(self, value: str):
+        """
+        Sets the verify SSL in requests.get to value
+        :param value: str (to be used in main)
+        :return: None
+        """
+        if value in ['False', 'false']:
+            self.verifySSL = False
+            self.logger.warning("SSL verification has been disabled for this website.")
+        else:
+            self.verifySSL = value
 
     # ==========================================
     ## Other Functions
