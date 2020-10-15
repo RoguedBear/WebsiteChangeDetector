@@ -36,9 +36,11 @@ class Webpage:
       - method1_diff()    : Method 1 for detecting change in website. Uses bash's `diff` command.
     """
 
-    def __init__(self, name, url):
+    def __init__(self, name, url, verifySSL=True):
+        self.sleep_time = 0.5
         self.name = name
         self.url = format_url(url)
+        self.verifySSL = verifySSL
         self.filename = {'old': f'{self.name}_old.html', 'new': f'{self.name}_new.html'}
         self.deltaChange = []
         self.logger = logging.getLogger(name)
@@ -67,7 +69,14 @@ class Webpage:
         output: str
         """
         while True:
-            html_page = requests.get(self.get_url()).text
+            try:  # if electricity goes out, and internet is not available for the time
+                html_page = requests.get(self.get_url(), verify=self.verifySSL).text
+            except ConnectionError:
+                self.logger.critical("ConnectionError! Internet or Electricity has probably gone out for a while. "
+                                     "Retrying in 1minute...")
+                sleep(60)
+                continue
+
             if len(html_page) == 0:
                 self.logger.warning(f" received webpage for \"{self.get_name()}\" of size 0! Retrying... ")
             else:
@@ -75,6 +84,7 @@ class Webpage:
                 break
         # Not required for method 1
         # self.code = html_page
+        # noinspection PyUnboundLocalVariable
         return html_page
 
     def get_filename(self, filetype) -> str:
@@ -134,7 +144,8 @@ class Webpage:
         file = open(file_name, 'w')
         file.write(code)
         file.close()
-        self.logger.debug(f"Saved html file as: {file_name} for class {self.get_name()}")
+        sleep(self.sleep_time)
+        self.logger.debug(f"Saved html file as: {file_name}")
 
     def load_html(self, old_new) -> str:
         """
@@ -145,8 +156,11 @@ class Webpage:
         try:
             file_name = self.get_filename(old_new)
             file = open(file_name, 'r')
+            data = file.readlines()
+            file.close()
+            sleep(self.sleep_time)
             self.logger.debug(f"Successfully opened {file_name}")
-            return ''.join(file.readlines())
+            return ''.join(data)
         except FileNotFoundError:
             self.logger.warning("File for " + self.get_name() + " does not exists!")
             return ''
@@ -214,12 +228,13 @@ class Webpage:
         # TODO: save this command line argument as instance variable and use that to save potentially some CPU usage.
         deltachange = self.get_deltaChange()
         args = '-I \'' + "' -I '".join(deltachange) + "'" if deltachange else ''
-        command = rf"""diff {args} {self.get_filename('old')} {self.get_filename('new')}"""
+        command = rf"""diff -EZBb {args} {self.get_filename('old')} {self.get_filename('new')}"""
 
-        self.logger.debug(f"sending command:\n{command}")
+        self.logger.debug(f"sending command:\n{command}\n")
         # Sending the command
-        output = os.popen(command).read()
 
+        output = os.popen(command).read()
+        #breakpoint()
         # Checking the output of diff
         # TODO: using beautiful soup, strip the tags and send the strings as output to be sent as alert
         if output != '':
@@ -252,10 +267,17 @@ class Webpage:
             change_detected, output = self.method1_diff()
 
         # If debug then save the file with current date.
-        if debug:
+        # noinspection PyUnboundLocalVariable
+        if change_detected and debug:
+            now = datetime.datetime.now()
             webpage_old = self.load_html('old')
-            self.save_html(f"{self.get_name()}{datetime.datetime.strftime(datetime.datetime.now(), '_%d-%m-%y_%H:%M')}"
-                           ".html", webpage_old)
+            self.save_html(f"{self.get_name()}{datetime.datetime.strftime(now, '_%d-%m-%y_%H:%M')}"
+                           "_old.html", webpage_old)
+            webpage_new = self.load_html('new')
+            self.save_html(f"{self.get_name()}{datetime.datetime.strftime(now, '_%d-%m-%y_%H:%M')}"
+                           "_new.html", webpage_new)
+            # noinspection PyUnboundLocalVariable
+            self.logger.debug(f"\n\n{output}")
 
         # After the checks are complete, move the _new.html file to as _old.html
         old_code = self.load_html('new')
@@ -312,8 +334,8 @@ def find_SameElements(code1, code2) -> str:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s: %(asctime)s - "%(name)s": %(funcName)16s() - %(message)s',
-                        datefmt='%d/%m/%y %H:%M:%S', level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s - %(levelname)-8s: %(funcName)16s() : "%(name)16.15s" - %(message)s',
+                        datefmt='%d/%m/%y %H:%M:%S', level=logging.DEBUG)
 
     test = Webpage('Ubi', 'free.ubisoft.com')
     print(test.load_html('old'))
