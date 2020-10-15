@@ -14,7 +14,8 @@ I am aiming for this project to have the same features as offered by other paid 
 GPL License will guarantee that derivatives of this project remain open-sourced 
 ## How to Use:
 
- 1. Save the websites you want to check in the csv file `config.csv` as:
+ 1. Save the websites you want to check in the csv file `config.csv` as: \
+  (4 columns used as of latest commit)
     ```
      1 | <<webpage 1 name>>, <<webpage 1 url to check>>, <<OPTIONAL timeout for finding delta change>>, <<OPTIONAL: True/False whether to verify SSL or not; default value in program is True>>
      2 | <<webpage 2 name>>, <<webpage 2 url to check>>, <<OPTIONAL timeout for finding delta change>>, <<OPTIONAL: True/False whether to verify SSL or not; default value in program is True>>
