@@ -90,7 +90,7 @@ if args.debug:
 else:
     level = logging.INFO
 
-logging.basicConfig(format='%(asctime)s - %(levelname)-8s: %(funcName)16s() : "%(name)16.15s" - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(levelname)-8s: %(funcName)16s() : |%(name)16.15s| - %(message)s',
                     datefmt='%d/%m/%y %H:%M:%S', level=level)
 logger = logging.getLogger("PHASE:Startup")
 
@@ -147,7 +147,7 @@ try:
                 new_class_instance.find_DeltaChange(int(row[2]))
             except (ValueError, IndexError):
                 new_class_instance.find_DeltaChange()
-            breakpoint()
+
             MASTER_WebpageList.append(new_class_instance)
     logger.info(f"Loading complete! Added: {len(MASTER_WebpageList)} webpage(s)\n\n")
 except FileNotFoundError:
