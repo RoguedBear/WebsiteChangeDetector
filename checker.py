@@ -43,7 +43,7 @@ class Webpage:
         self.verifySSL = True
         self.filename = {'old': f'{self.name}_old.html', 'new': f'{self.name}_new.html'}
         self.deltaChange = []
-        self.logger = logging.getLogger(name)
+        self.logger = logging.getLogger(f"\"{name}\"")
         self.logger.debug(f"Created Class Webpage: {name}")
 
     # =========================================
@@ -68,6 +68,8 @@ class Webpage:
         Also saves the webpage in code variable.
         output: str
         """
+        # Statement to avoid "variable might be referenced before assingment"
+        html_page = ''
         while True:
             try:  # if electricity goes out, and internet is not available for the time
                 html_page = requests.get(self.get_url(), verify=self.verifySSL).text
@@ -76,6 +78,13 @@ class Webpage:
                                      "Retrying in 1minute...")
                 sleep(60)
                 continue
+            except requests.exceptions.SSLError as error:
+                print(error)
+                self.logger.critical("Looks like, requests is having problems with SSL for this website.\n"
+                                     "Try adding 'false' in the  4th column in csv file for this webpage" 
+                                     "(Refer \"README How To Run\" 1st bullet point)")
+                # TODO: skip the current wbsite instead of quitting program.
+                quit()
 
             if len(html_page) == 0:
                 self.logger.warning(f" received webpage for \"{self.get_name()}\" of size 0! Retrying... ")
@@ -246,7 +255,7 @@ class Webpage:
         # Sending the command
 
         output = os.popen(command).read()
-        #breakpoint()
+
         # Checking the output of diff
         # TODO: using beautiful soup, strip the tags and send the strings as output to be sent as alert
         if output != '':
@@ -269,6 +278,7 @@ class Webpage:
         except AssertionError:
             self.logger.critical("method argument not in range! Cannot detect changes for this webpage until "
                                  f"then.\nGiven 'method' argument: {method}")
+            return False, ''
 
         # Downloading the new file
         new_code = self.get_webpage()
@@ -338,8 +348,10 @@ def find_SameElements(code1, code2) -> str:
     """
     same = ''
     for i, j in zip(code1, code2):
-        if i == j and i.isnumeric() is False and i not in ['\\', '/']:
+        if i == j and i.isnumeric() is False and i not in ['\\', '/', '[', ']', '-']:
             same += i
+        if i.isnumeric():
+            same += '[0-9]'
         else:
             break
     return same
@@ -373,3 +385,9 @@ if __name__ == '__main__':
     test2_method1.find_DeltaChange(debug=True)
     print(test2_method1.method1_diff())
     test2_method1.detect(3)
+
+    # Digits test
+    print("---------------")
+    josa = Webpage('josaa_14-10-20_20:21', 'localhost')
+    josa.find_DeltaChange(debug=True)
+    print(josa.method1_diff())
