@@ -50,7 +50,7 @@ GPL License will guarantee that derivatives of this project remain open-sourced
    3. Changes will be notified by Telegram ![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/16px-Telegram_logo.svg.png). \
    You need to create your own bot, and enter your own bot `TOKEN` and your `CHAT_ID` either on line 26 and 27 in [main.py](main.py) in the function `alert_onTelegram()` or create a file same as [telegram_tokens.json](telegram_tokens.json) and enter your `CHAT_ID` and `TOKEN` in either `str` or `int` there.
 ## How it works:
-_To be written..._
+_To be written..._ (For the time being, currently the program calls bash's `diff` command to check for changes)
 ## ToDo:
 
  - [x] Have a better Logging format.
