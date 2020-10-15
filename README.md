@@ -7,8 +7,8 @@
 
  1. Save the websites you want to check in the csv file `config.csv` as:
     ```
-     1 | <<webpage 1 name>>, <<webpage 1 url to check>>
-     2 | <<webpage 2 name>>, <<webpage 2 url to check>>
+     1 | <<webpage 1 name>>, <<webpage 1 url to check>>, <<optional timeout for finding delta change>>, <<True/False whether to verify SSL or not; default value in program is True>>
+     2 | <<webpage 2 name>>, <<webpage 2 url to check>>, <<optional timeout for finding delta change>>, <<True/False whether to verify SSL or not; default value in program is True>>
     ``` 
     Note that you do not need to write any "csv headings". just directly follow this format.
  
@@ -38,11 +38,15 @@
     ```
    3. Changes will be notified by Telegram ![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/16px-Telegram_logo.svg.png). \
    You need to create your own bot, and enter your own bot `TOKEN` and your `CHAT_ID` either on line 26 and 27 in [main.py](main.py) in the function `alert_onTelegram()` or create a file same as [telegram_tokens.json](telegram_tokens.json) and enter your `CHAT_ID` and `TOKEN` in either `str` or `int` there.
+## How it works:
+
 ## ToDo:
 
+ - [ ] Have a better Logging format.
  - [ ] Ability to add more websites to the list without stopping the program.
- - [ ] Check for constant changes ( aka ∆change ) daily. <br>
-       some websites have messed up code changing daily, which needs to be "_intelligently_" identified if the change is some daily-occurring change (such as day/date) or an actual change.
+ - [ ] ~~Check for constant changes ( aka ∆change ) daily. <br>
+       some websites have messed up code changing daily, which needs to be "_intelligently_" identified if the change is some daily-occurring change (such as day/date) or an actual change.~~ \
+       much better way would be to reply back to the bot about the False Positive, and the bot will then add it to list_ofDeltaChange
  - [ ] Generate the before and after screenshots (much like how Visualping does).
 
 ---
