@@ -3,6 +3,15 @@
  
 > A self-hosted program, which detects when a website's contents are updated (a website has changed) and notifies you about it.
 
+Not many services exist (that I can find of) which notify you about changes in websites that you might want to track. 
+Some do, but they're either paid or limited in how many websites you can track. \
+All this could be overcome for free, if you have some programming background **and time**.
+
+I created this Change Detector, to batch check the websites which are on my monitoring list which I can run on my own server, or on the cloud and works according to how I want.
+I am aiming for this project to have the same features as offered by other paid services by using the power of Open-Source Community. And Time.
+
+
+GPL License will guarantee that derivatives of this project remain open-sourced 
 ## How to Use:
 
  1. Save the websites you want to check in the csv file `config.csv` as:
@@ -40,7 +49,7 @@
    3. Changes will be notified by Telegram ![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/16px-Telegram_logo.svg.png). \
    You need to create your own bot, and enter your own bot `TOKEN` and your `CHAT_ID` either on line 26 and 27 in [main.py](main.py) in the function `alert_onTelegram()` or create a file same as [telegram_tokens.json](telegram_tokens.json) and enter your `CHAT_ID` and `TOKEN` in either `str` or `int` there.
 ## How it works:
-
+_To be written..._
 ## ToDo:
 
  - [x] Have a better Logging format.
@@ -50,8 +59,9 @@
        some websites have messed up code changing daily, which needs to be "_intelligently_" identified if the change is some daily-occurring change (such as day/date) or an actual change.~~ \
        much better way would be to reply back to the bot about the False Positive, and the bot will then add it to list_ofDeltaChange
  - [ ] Generate the before and after screenshots (much like how Visualping does).
+ - [ ] Give a better name to the project?
 
 ---
-#### Feel free to contribute, find issues in this project if you can!
+#### Feel free to find and open issues or contribute in this project if you can!
 
 ---
