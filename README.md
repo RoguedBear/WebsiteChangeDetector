@@ -7,10 +7,11 @@
 
  1. Save the websites you want to check in the csv file `config.csv` as:
     ```
-     1 | <<webpage 1 name>>, <<webpage 1 url to check>>, <<optional timeout for finding delta change>>, <<True/False whether to verify SSL or not; default value in program is True>>
-     2 | <<webpage 2 name>>, <<webpage 2 url to check>>, <<optional timeout for finding delta change>>, <<True/False whether to verify SSL or not; default value in program is True>>
+     1 | <<webpage 1 name>>, <<webpage 1 url to check>>, <<OPTIONAL timeout for finding delta change>>, <<OPTIONAL: True/False whether to verify SSL or not; default value in program is True>>
+     2 | <<webpage 2 name>>, <<webpage 2 url to check>>, <<OPTIONAL timeout for finding delta change>>, <<OPTIONAL: True/False whether to verify SSL or not; default value in program is True>>
     ``` 
-    Note that you do not need to write any "csv headings". just directly follow this format.
+    - Note that you do not need to write any "csv headings". just directly follow this format.
+    - If you get SSLError, then you must write `false` in the 4th column for the respective webpage.
  
  2. Run [main.py](main.py) (`python3 main.py`). \
    By default program will with default settings. You can configure some of them, by passing them as command line arguments. \
@@ -42,7 +43,8 @@
 
 ## ToDo:
 
- - [ ] Have a better Logging format.
+ - [x] Have a better Logging format.
+ - [ ] Skipping the webpage when any critical error/exception is encountered instead of stopping the execution of program.
  - [ ] Ability to add more websites to the list without stopping the program.
  - [ ] ~~Check for constant changes ( aka ∆change ) daily. <br>
        some websites have messed up code changing daily, which needs to be "_intelligently_" identified if the change is some daily-occurring change (such as day/date) or an actual change.~~ \
