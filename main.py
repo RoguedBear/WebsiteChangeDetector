@@ -27,7 +27,7 @@ def alert_onTelegram(message: str):
         TOKEN = ''
 
     requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&parse_mode=Markdown"
-                                                                                              "&text=" + message[:4096])
+                                                                                              "&text=" + message[:1000])
 
 
 # noinspection PyShadowingNames
@@ -48,6 +48,26 @@ def send_uptimealert():
     :return:
     """
     alert_onTelegram("#UptimeStatus, The program is working 🤖👍")
+
+
+def get_item(iterable, index, default='', to_type=str):
+    """
+    Safely retrieve an item from a tuple. (tuple which is retrieved from CSV parser
+    :param iterable: the tuple or list
+    :param index: the index which you want
+    :param default: the value to be used if the said stuff is not found
+    :param to_type: the data type to convert that stuff to. will output default if ValueError occurs
+    :return: to_type or str
+    """
+    try:
+        return_stuff = iterable[index].strip()
+        try:
+            return_stuff = to_type(return_stuff)
+        except ValueError:
+            return_stuff = str(return_stuff)
+    except IndexError:
+        return_stuff = default
+    return return_stuff
 
 
 # ==================================================================================
@@ -96,7 +116,7 @@ ALERT_TIME = time(hour=14)
 
 if args.time:
     ALERT_TIME = datetime.strptime(args.time, '%H:%M').time()
-logger.info(f"Program will alert the user about program uptime on: {ALERT_TIME.strftime('%I:%M %p')}")
+logger.info(f"Program will alert the user about program uptime on: {ALERT_TIME.strftime('%I:%M %p')}\n\n")
 
 # Sending alert:
 alert_onTelegram("Program started. 🤖")
@@ -120,14 +140,18 @@ try:
             logger.info(f"Reading \"{row[0]}\".")
 
             new_class_instance = checker.Webpage(row[0].strip(), row[1].strip())
+
+            # Set verify SSL value, incase requests returns SSLError
+            new_class_instance.set_verifySSL(get_item(row, 3))
             try:
                 new_class_instance.find_DeltaChange(int(row[2]))
             except (ValueError, IndexError):
                 new_class_instance.find_DeltaChange()
+            breakpoint()
             MASTER_WebpageList.append(new_class_instance)
-    logger.info(f"Loading complete! Added: {len(MASTER_WebpageList)} elements")
+    logger.info(f"Loading complete! Added: {len(MASTER_WebpageList)} webpage(s)\n\n")
 except FileNotFoundError:
-    logger.critical("Configuration file does not exists! Creating a default one")
+    logger.critical("Configuration file does not exists! Creating a default one\n\n")
     file = open('config.csv', 'w')
     file.close()
 
@@ -140,6 +164,7 @@ for i in range(5, -1, -1):
     print(f"Starting main loop in {i}...", end='\r')
     sleep(1)
     print("                          ", end='\r')
+print()
 logger.info("Started Main loop...")
 target_time = timedelta(hours=ALERT_TIME.hour, minutes=ALERT_TIME.minute)
 """Pseudocode:
@@ -149,10 +174,11 @@ target_time = timedelta(hours=ALERT_TIME.hour, minutes=ALERT_TIME.minute)
     * check if time is within 20 minutes of ALERT_TIME, then send a message that the program is working
 """
 while True:
+    sleep(SLEEP_TIME)
     # iterating through master list
     for webpage in MASTER_WebpageList:
         # use the detect
-        change_detected, output = webpage.detect(1)
+        change_detected, output = webpage.detect(1, debug=True)
 
         # If change is detected
         if change_detected:
@@ -167,5 +193,3 @@ while True:
         logger.debug(
             f"Starting UptimeThread with wait duration of: {duration.seconds / 3600:.02f} hours or {duration.seconds / 60:.02f} minutes")
         Timer(duration.seconds, send_uptimealert).start()
-
-    sleep(SLEEP_TIME)
