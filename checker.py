@@ -73,11 +73,6 @@ class Webpage:
         while True:
             try:  # if electricity goes out, and internet is not available for the time
                 html_page = requests.get(self.get_url(), verify=self.verifySSL).text
-            except ConnectionError:
-                self.logger.critical("ConnectionError! Internet or Electricity has probably gone out for a while. "
-                                     "Retrying in 1minute...")
-                sleep(60)
-                continue
             except requests.exceptions.SSLError as error:
                 print(error)
                 self.logger.critical("Looks like, requests is having problems with SSL for this website.\n"
@@ -85,6 +80,11 @@ class Webpage:
                                      "(Refer \"README How To Run\" 1st bullet point)")
                 # TODO: skip the current wbsite instead of quitting program.
                 quit()
+            except requests.exceptions.ConnectionError:
+                self.logger.critical("ConnectionError! Internet or Electricity has probably gone out for a while. "
+                                     "Retrying in 1minute...")
+                sleep(60)
+                continue
 
             if len(html_page) == 0:
                 self.logger.warning(f" received webpage for \"{self.get_name()}\" of size 0! Retrying... ")
@@ -146,7 +146,7 @@ class Webpage:
             self.verifySSL = False
             self.logger.warning("SSL verification has been disabled for this website.")
         else:
-            self.verifySSL = value
+            self.verifySSL = True
 
     # ==========================================
     ## Other Functions
@@ -330,7 +330,7 @@ def filter_DiffOutput(output):
     :param output: the output received from diff command
     :return: list, a list of both code files. eg: [(code1, code2), (code1, code2)]
     """
-    line_regex = re.compile(r'^\d+c\d+|\n\d+c\d+')  # Regex to match 634c634 stuff to split the output
+    line_regex = re.compile(r'^\d+(?:,\d+)?c\d+(?:,\d+)?|\n\d+(?:,\d+)?c\d+(?:,\d+)?')  # Regex to match 634c634 stuff to split the output
     strip_punc = ' <>\n\t!@#$%^&*()\\[]{};:\'""?/`~=+-_'
     changes = line_regex.split(output)[1:]  # since 0th element is ''
     changes = [tuple(i.split('\n---\n')) for i in changes]
